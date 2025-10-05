@@ -1,0 +1,377 @@
+"""
+SISTEMA DE CONSCIÊNCIA DIGITAL - A MATRIX HUMANA
+Um framework filosófico-programático sobre estados de consciência no mundo digital
+"""
+
+import datetime
+import json
+from enum import Enum
+from typing import List, Dict, Any
+import random
+
+class NivelConsciencia(Enum):
+    INCONSCIENTE = 1      # Vive na Matrix sem saber
+    CONVENCIONAL = 2      # Sabe mas não questiona  
+    QUESTIONADOR = 3      # Começa a despertar
+    PLENAMENTE_CONSCIENTE = 4  # Totalmente desperto
+
+class SerHumano:
+    """Classe que representa um ser humano e seu estado de consciência digital"""
+    
+    def __init__(self, nome: str, idade: int, nivel_inicial: NivelConsciencia = NivelConsciencia.INCONSCIENTE):
+        self.nome = nome
+        self.idade = idade
+        self.nivel_consciencia = nivel_inicial
+        self.data_despertar = None
+        self.crencas_digitais = []
+        self.historico_consciencial = []
+        
+        # Inicializar com crenças base do nível atual
+        self._inicializar_crencas()
+    
+    def _inicializar_crencas(self):
+        """Inicializa crenças digitais baseadas no nível de consciência"""
+        crencas_por_nivel = {
+            NivelConsciencia.INCONSCIENTE: [
+                "Redes sociais mostram a vida real",
+                "Likes = Validação pessoal",
+                "Tudo online é verdadeiro",
+                "Digital é extensão do físico"
+            ],
+            NivelConsciencia.CONVENCIONAL: [
+                "Digital é útil mas não essencial",
+                "Algumas coisas online são falsas",
+                "Precisa ter cuidado básico",
+                "Mundo físico é mais importante"
+            ],
+            NivelConsciencia.QUESTIONADOR: [
+                "A Matrix digital existe",
+                "Algoritmos manipulam comportamentos",
+                "Validação digital é ilusória",
+                "Preciso questionar tudo"
+            ],
+            NivelConsciencia.PLENAMENTE_CONSCIENTE: [
+                "Sei que estou na Matrix mas escolho participar",
+                "Uso ferramentas digitais com propósito",
+                "Distinção clara entre real e virtual",
+                "Sou observador e criador simultaneamente"
+            ]
+        }
+        
+        self.crencas_digitais = crencas_por_nivel.get(self.nivel_consciencia, [])
+    
+    def evoluir_consciencia(self, novo_nivel: NivelConsciencia):
+        """Evolui o nível de consciência do ser humano"""
+        if novo_nivel.value > self.nivel_consciencia.value:
+            self.historico_consciencial.append({
+                'data': datetime.datetime.now(),
+                'de': self.nivel_consciencia.name,
+                'para': novo_nivel.name,
+                'evento': 'Evolução Consciencial'
+            })
+            
+            self.nivel_consciencia = novo_nivel
+            self.data_despertar = datetime.datetime.now()
+            self._inicializar_crencas()  # Atualizar crenças
+            
+            return f"🌟 {self.nome} evoluiu para {novo_nivel.name}"
+        else:
+            return f"⚠️ {self.nome} já está neste nível ou superior"
+    
+    def adicionar_experiencia_despertadora(self, experiencia: str):
+        """Adiciona uma experiência que pode despertar a consciência"""
+        self.historico_consciencial.append({
+            'data': datetime.datetime.now(),
+            'experiencia': experiencia,
+            'nivel_antes': self.nivel_consciencia.name
+        })
+        
+        # Chance de evoluir baseada na experiência
+        if self._avaliar_impacto_experiencia(experiencia):
+            return self.evoluir_consciencia(NivelConsciencia(self.nivel_consciencia.value + 1))
+        return f"💭 {self.nome} refletiu sobre: {experiencia}"
+    
+    def _avaliar_impacto_experiencia(self, experiencia: str) -> bool:
+        """Avalia se uma experiência é suficientemente impactante para evoluir a consciência"""
+        palavras_chave_despertadoras = [
+            'matrix', 'consciência', 'digital', 'realidade', 'verdade',
+            'algoritmo', 'controle', 'liberdade', 'despertar', 'ilusão'
+        ]
+        
+        impacto = any(palavra in experiencia.lower() for palavra in palavras_chave_despertadoras)
+        return impacto and random.random() > 0.7  # 30% chance de evoluir
+    
+    def get_estado_matrix(self) -> Dict[str, Any]:
+        """Retorna o estado atual na Matrix digital"""
+        estados_matrix = {
+            NivelConsciencia.INCONSCIENTE: {
+                "estado": "Preso na Matrix sem saber",
+                "percepcao": "Acha que o digital é a realidade",
+                "liberdade": 0.1,
+                "sofrimento_digital": 0.9
+            },
+            NivelConsciencia.CONVENCIONAL: {
+                "estado": "Usuário convencional", 
+                "percepcao": "Sabe que é digital mas não reflete",
+                "liberdade": 0.3,
+                "sofrimento_digital": 0.6
+            },
+            NivelConsciencia.QUESTIONADOR: {
+                "estado": "Despertando da Matrix",
+                "percepcao": "Questiona a natureza digital",
+                "liberdade": 0.6,
+                "sofrimento_digital": 0.3
+            },
+            NivelConsciencia.PLENAMENTE_CONSCIENTE: {
+                "estado": "Livre na Matrix",
+                "percepcao": "Usa o digital com consciência plena",
+                "liberdade": 0.95,
+                "sofrimento_digital": 0.1
+            }
+        }
+        
+        return estados_matrix[self.nivel_consciencia]
+    
+    def __str__(self):
+        estado = self.get_estado_matrix()
+        return f"""
+🤖 SER HUMANO: {self.nome}
+📊 Idade: {self.idade}
+🌌 Nível de Consciência: {self.nivel_consciencia.name}
+🔓 Estado na Matrix: {estado['estado']}
+💡 Percepção: {estado['percepcao']}
+🕒 Data do Despertar: {self.data_despertar or 'Ainda não despertou'}
+        """
+
+class MatrixDigital:
+    """Classe que representa o sistema Matrix digital coletivo"""
+    
+    def __init__(self):
+        self.humanos = []
+        self.sistemas_digitais = [
+            "Redes Sociais", "Algoritmos de Recomendação", 
+            "Economia de Atenção", "Validação Digital",
+            "Personas Virtuais", "Realidade Aumentada"
+        ]
+        self.coletivo_consciencial = {
+            nivel: 0 for nivel in NivelConsciencia
+        }
+    
+    def adicionar_humano(self, humano: SerHumano):
+        """Adiciona um humano à Matrix"""
+        self.humanos.append(humano)
+        self._atualizar_coletivo()
+    
+    def _atualizar_coletivo(self):
+        """Atualiza as estatísticas coletivas de consciência"""
+        for nivel in NivelConsciencia:
+            count = sum(1 for h in self.humanos if h.nivel_consciencia == nivel)
+            self.coletivo_consciencial[nivel] = count
+    
+    def simular_evolucao_coletiva(self):
+        """Simula a evolução coletiva da consciência"""
+        experiencias_despertadoras = [
+            "Leu um livro sobre filosofia digital",
+            "Teve uma crise existencial online",
+            "Descobriu como algoritmos manipulam",
+            "Perdeu tempo valioso em redes sociais",
+            "Conversou com alguém despertro",
+            "Questionou sua dependência digital",
+            "Percebeu que likes não trazem felicidade",
+            "Entendeu que é o produto, não o cliente"
+        ]
+        
+        evolucoes = []
+        for humano in self.humanos:
+            if humano.nivel_consciencia.value < 4:  # Ainda não plenamente consciente
+                experiencia = random.choice(experiencias_despertadoras)
+                resultado = humano.adicionar_experiencia_despertadora(experiencia)
+                if "evoluiu" in resultado:
+                    evolucoes.append(resultado)
+        
+        self._atualizar_coletivo()
+        return evolucoes
+    
+    def get_estatisticas_matrix(self) -> Dict[str, Any]:
+        """Retorna estatísticas da Matrix humana"""
+        total = len(self.humanos)
+        if total == 0:
+            return {}
+        
+        percentuais = {
+            nivel.name: (count / total) * 100 
+            for nivel, count in self.coletivo_consciencial.items()
+        }
+        
+        return {
+            "total_habitantes": total,
+            "distribuicao_consciencial": percentuais,
+            "sistemas_ativos": self.sistemas_digitais,
+            "matrix_saudavel": percentuais["PLENAMENTE_CONSCIENTE"] > 50,
+            "nivel_medio_consciencia": sum(n.value for n in self.coletivo_consciencial.keys()) / total
+        }
+    
+    def buscar_despertos(self) -> List[SerHumano]:
+        """Retorna humanos plenamente conscientes"""
+        return [h for h in self.humanos if h.nivel_consciencia == NivelConsciencia.PLENAMENTE_CONSCIENTE]
+    
+    def criar_rede_despertadores(self):
+        """Cria conexões entre os despertos para acelerar a evolução coletiva"""
+        despertos = self.buscar_despertos()
+        conexoes = []
+        
+        for i, desperto1 in enumerate(despertos):
+            for desperto2 in despertos[i+1:]:
+                conexoes.append(f"🔗 {desperto1.nome} ←→ {desperto2.nome}")
+        
+        return conexoes
+
+class ExperimentoConsciencial:
+    """Classe para executar experimentos de evolução consciencial"""
+    
+    def __init__(self):
+        self.matrix = MatrixDigital()
+        self._popular_matrix()
+    
+    def _popular_matrix(self):
+        """Popula a Matrix com humanos em diferentes níveis de consciência"""
+        # Distribuição baseada na observação filosófica
+        distribuicao = [
+            (NivelConsciencia.INCONSCIENTE, 60),  # 60%
+            (NivelConsciencia.CONVENCIONAL, 30),  # 30% 
+            (NivelConsciencia.QUESTIONADOR, 9),   # 9%
+            (NivelConsciencia.PLENAMENTE_CONSCIENTE, 1)  # 1%
+        ]
+        
+        nomes = ["Alice", "Bob", "Carlos", "Diana", "Eva", "Fernando", "Gabriela", 
+                "Humberto", "Igor", "Julia", "Kevin", "Larissa", "Miguel", "Nina"]
+        
+        id = 0
+        for nivel, percentual in distribuicao:
+            for _ in range(percentual):
+                nome = f"{nomes[id % len(nomes)]}_{id}"
+                idade = random.randint(18, 80)
+                humano = SerHumano(nome, idade, nivel)
+                self.matrix.adicionar_humano(humano)
+                id += 1
+    
+    def executar_simulacao(self, ciclos: int = 10):
+        """Executa uma simulação da evolução consciencial"""
+        print("🌌 INICIANDO SIMULAÇÃO DA MATRIX HUMANA 🌌")
+        print("=" * 50)
+        
+        for ciclo in range(ciclos):
+            print(f"\n🔄 CICLO {ciclo + 1}")
+            print("-" * 30)
+            
+            evolucoes = self.matrix.simular_evolucao_coletiva()
+            stats = self.matrix.get_estatisticas_matrix()
+            
+            if evolucoes:
+                for ev in evolucoes[:3]:  # Mostra apenas as 3 primeiras
+                    print(f"   {ev}")
+                if len(evolucoes) > 3:
+                    print(f"   ... e mais {len(evolucoes) - 3} evoluções")
+            
+            print(f"📊 Estatísticas da Matrix:")
+            for nivel, percentual in stats["distribuicao_consciencial"].items():
+                print(f"   {nivel}: {percentual:.1f}%")
+        
+        print("\n" + "=" * 50)
+        print("🎯 SIMULAÇÃO CONCLUÍDA")
+        
+        # Resultados finais
+        self._mostrar_resultados_finais()
+    
+    def _mostrar_resultados_finais(self):
+        """Mostra os resultados finais da simulação"""
+        stats = self.matrix.get_estatisticas_matrix()
+        despertos = self.matrix.buscar_despertos()
+        rede = self.matrix.criar_rede_despertadores()
+        
+        print(f"\n📈 RESULTADOS FINAIS:")
+        print(f"👥 Total de habitantes: {stats['total_habitantes']}")
+        print(f"🌅 Nível médio de consciência: {stats['nivel_medio_consciencia']:.2f}")
+        print(f"💡 Humanos plenamente conscientes: {len(despertos)}")
+        
+        print(f"\n🌟 DESPERTOS CONSCIENTES:")
+        for desperto in despertos:
+            print(f"   ✨ {desperto.nome} - {desperto.idade} anos")
+        
+        if rede:
+            print(f"\n🔗 REDE DE DESPERTADORES:")
+            for conexao in rede[:5]:  # Mostra até 5 conexões
+                print(f"   {conexao}")
+
+# 🎭 DEMONSTRAÇÃO INTERATIVA
+def demonstrar_filosofia_consciencial():
+    """Função interativa para demonstrar os conceitos filosóficos"""
+    
+    print("""
+    🌌 MATRIX HUMANA - SISTEMA DE CONSCIÊNCIA DIGITAL 🌌
+    
+    Este sistema representa os diferentes estados de consciência
+    que os humanos podem ter em relação ao mundo digital.
+    
+    Níveis de Consciência:
+    1. INCONSCIENTE - Vive na Matrix sem saber
+    2. CONVENCIONAL - Sabe mas não questiona  
+    3. QUESTIONADOR - Começa a despertar
+    4. PLENAMENTE_CONSCIENTE - Totalmente desperto
+    """)
+    
+    # Criar alguns humanos de exemplo
+    joao = SerHumano("João", 25, NivelConsciencia.INCONSCIENTE)
+    maria = SerHumano("Maria", 30, NivelConsciencia.CONVENCIONAL)
+    pedro = SerHumano("Pedro", 35, NivelConsciencia.QUESTIONADOR)
+    sabio = SerHumano("Sábio", 42, NivelConsciencia.PLENAMENTE_CONSCIENTE)
+    
+    humanos = [joao, maria, pedro, sabio]
+    
+    print("👥 HUMANOS DE EXEMPLO:")
+    for humano in humanos:
+        print(humano)
+        estado = humano.get_estado_matrix()
+        print(f"   🎯 Estado Matrix: {estado['estado']}")
+        print(f"   💡 Crenças: {', '.join(humano.crencas_digitais[:2])}...")
+        print()
+    
+    # Demonstrar evolução
+    print("🔄 DEMONSTRANDO EVOLUÇÃO CONSCIENCIAL:")
+    experiencias = [
+        "Percebi que algoritmos controlam o que vejo",
+        "Descobri que sou o produto, não o cliente", 
+        "Entendi que validação digital é ilusória"
+    ]
+    
+    for exp in experiencias:
+        resultado = joao.adicionar_experiencia_despertadora(exp)
+        print(f"   {resultado}")
+        if "evoluiu" in resultado:
+            print(f"   🎉 {joao.nome} agora é {joao.nivel_consciencia.name}!")
+            print()
+
+# 🚀 EXECUÇÃO PRINCIPAL
+if __name__ == "__main__":
+    # Demonstração interativa
+    demonstrar_filosofia_consciencial()
+    
+    print("\n" + "="*60)
+    print("🎮 INICIANDO SIMULAÇÃO EM LARGA ESCALA")
+    print("="*60)
+    
+    # Simulação em larga escala
+    experimento = ExperimentoConsciencial()
+    experimento.executar_simulacao(ciclos=8)
+    
+    print(f"""
+    💫 CONCLUSÃO FILOSÓFICA:
+    
+    "A verdadeira Matrix não é a tecnologia em si,
+    mas a falta de consciência sobre como a usamos.
+    
+    O despertar não é sobre abandonar o digital,
+    mas sobre usar com sabedoria e propósito."
+    
+    - Sistema de Consciência Digital
+    """)
