@@ -1,0 +1,499 @@
+"""
+APP DESPERTAR CONSCIÊNCIA DIGITAL
+Aplicativo interativo para ajudar humanos a despertarem da Matrix digital
+"""
+
+import tkinter as tk
+from tkinter import ttk, messagebox, scrolledtext
+import json
+import datetime
+from typing import List, Dict
+import random
+
+class AppDespertarConsciencia:
+    """Aplicativo principal para despertar da Matrix digital"""
+    
+    def __init__(self, root):
+        self.root = root
+        self.root.title("🌌 App Despertar Consciência Digital")
+        self.root.geometry("1000x700")
+        self.root.configure(bg='#1e1e1e')
+        
+        # Estado do usuário
+        self.usuario = {
+            "nome": "",
+            "nivel_consciencia": 1,
+            "pontuacao": 0,
+            "experiencias": [],
+            "data_cadastro": datetime.datetime.now(),
+            "crencas_questionadas": []
+        }
+        
+        # Banco de conhecimento
+        self.carregar_conhecimento()
+        self.setup_ui()
+    
+    def carregar_conhecimento(self):
+        """Carrega o conhecimento sobre Matrix digital"""
+        self.niveis_consciencia = {
+            1: {
+                "nome": "Inconsciente Digital",
+                "descricao": "Vive na Matrix sem perceber",
+                "caracteristicas": [
+                    "Acredita que redes sociais mostram a realidade",
+                    "Busca validação através de likes",
+                    "Não questiona algoritmos",
+                    "Confunde persona digital com identidade real"
+                ],
+                "exercicios": [
+                    "Quantas horas você passa online sem perceber?",
+                    "Já comparou sua vida real com a dos influencers?",
+                    "Você se sente mal quando não recebe engajamento?"
+                ]
+            },
+            2: {
+                "nome": "Questionador Inicial", 
+                "descricao": "Começa a perceber padrões",
+                "caracteristicas": [
+                    "Desconfia que algo não está certo",
+                    "Questiona algumas informações online",
+                    "Percebe manipulação básica",
+                    "Sente cansaço digital"
+                ],
+                "exercicios": [
+                    "Liste 3 coisas que você viu online que eram falsas",
+                    "Monitore seu humor após usar redes sociais",
+                    "Identifique um algoritmo influenciando suas escolhas"
+                ]
+            },
+            3: {
+                "nome": "Consciência Ativa",
+                "descricao": "Compreende a Matrix digital",
+                "caracteristicas": [
+                    "Entende como algoritmos funcionam",
+                    "Sabe que é o produto, não o cliente", 
+                    "Usa tecnologia com propósito",
+                    "Distingue real de digital"
+                ],
+                "exercicios": [
+                    "Descreva como você seria diferente sem redes sociais",
+                    "Qual seu propósito ao usar cada ferramenta digital?",
+                    "Como você protege sua atenção dos algoritmos?"
+                ]
+            },
+            4: {
+                "nome": "Mestre Digital Consciente",
+                "descricao": "Livre na Matrix",
+                "caracteristicas": [
+                    "Usa ferramentas digitais com sabedoria",
+                    "Ensina outros a despertarem",
+                    "Cria conteúdo consciente",
+                    "Vive em equilíbrio digital-físico"
+                ],
+                "exercicios": [
+                    "Como você pode ajudar outros a despertarem?",
+                    "Que sistema consciente você pode criar?",
+                    "Qual seu legado digital positivo?"
+                ]
+            }
+        }
+        
+        self.experiencias_despertadoras = [
+            {
+                "titulo": "O Algoritmo Invisível",
+                "descricao": "Perceber como os algoritmos controlam o que você vê",
+                "reflexao": "Você realmente escolhe o que consome ou é programado?",
+                "acao": "Desative recomendações automáticas por um dia"
+            },
+            {
+                "titulo": "A Economia da Atenção", 
+                "descricao": "Entender que seu tempo de atenção é o produto vendido",
+                "reflexao": "Quem se beneficia quando você fica horas scrollando?",
+                "acao": "Calcule quanto vale sua hora de atenção"
+            },
+            {
+                "titulo": "Persona vs Essência",
+                "descricao": "Distinguir quem você é de quem aparece online",
+                "reflexao": "Sua persona digital te representa ou te aprisiona?",
+                "acao": "Delete uma foto que não mostra sua essência real"
+            },
+            {
+                "titulo": "Validação Artificial",
+                "descricao": "Questionar a necessidade de likes e seguidores",
+                "reflexao": "Likes preenchem qual vazio real na sua vida?",
+                "acao": "Fique uma semana sem postar buscando validação"
+            }
+        ]
+    
+    def setup_ui(self):
+        """Configura a interface do aplicativo"""
+        # Frame principal
+        main_frame = ttk.Frame(self.root, padding="10")
+        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        
+        # Configurar grid
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0, weight=1)
+        main_frame.columnconfigure(1, weight=1)
+        main_frame.rowconfigure(1, weight=1)
+        
+        # Cabeçalho
+        header = ttk.Label(main_frame, 
+                          text="🌌 Jornada do Despertar Digital", 
+                          font=('Arial', 16, 'bold'),
+                          foreground='#4fc3f7')
+        header.grid(row=0, column=0, columnspan=2, pady=(0, 20))
+        
+        # Menu lateral
+        self.setup_menu_lateral(main_frame)
+        
+        # Área de conteúdo principal
+        self.setup_area_conteudo(main_frame)
+        
+        # Iniciar com tela de boas-vindas
+        self.mostrar_tela_boas_vindas()
+    
+    def setup_menu_lateral(self, parent):
+        """Configura o menu lateral"""
+        menu_frame = ttk.Frame(parent, width=200)
+        menu_frame.grid(row=1, column=0, sticky=(tk.N, tk.S), padx=(0, 10))
+        menu_frame.rowconfigure(8, weight=1)
+        
+        botoes_menu = [
+            ("🏠 Início", self.mostrar_tela_boas_vindas),
+            ("📊 Meu Nível", self.mostrar_diagnostico),
+            ("💡 Exercícios", self.mostrar_exercicios),
+            ("🎯 Experiências", self.mostrar_experiencias),
+            ("📈 Progresso", self.mostrar_progresso),
+            ("🌐 Comunidade", self.mostrar_comunidade),
+            ("📚 Biblioteca", self.mostrar_biblioteca),
+            ("⚙️ Configurações", self.mostrar_configuracoes)
+        ]
+        
+        for i, (texto, comando) in enumerate(botoes_menu):
+            btn = ttk.Button(menu_frame, 
+                           text=texto, 
+                           command=comando,
+                           width=15)
+            btn.grid(row=i, column=0, pady=5, sticky=(tk.W, tk.E))
+    
+    def setup_area_conteudo(self, parent):
+        """Configura a área de conteúdo principal"""
+        self.conteudo_frame = ttk.Frame(parent)
+        self.conteudo_frame.grid(row=1, column=1, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.conteudo_frame.columnconfigure(0, weight=1)
+        self.conteudo_frame.rowconfigure(0, weight=1)
+        
+        # Área de texto rolável
+        self.text_area = scrolledtext.ScrolledText(
+            self.conteudo_frame, 
+            wrap=tk.WORD, 
+            width=80, 
+            height=30,
+            font=('Arial', 11),
+            bg='#2b2b2b',
+            fg='#ffffff',
+            insertbackground='white'
+        )
+        self.text_area.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.text_area.config(state=tk.DISABLED)
+        
+        # Frame de entrada do usuário
+        self.input_frame = ttk.Frame(self.conteudo_frame)
+        self.input_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(10, 0))
+        self.input_frame.columnconfigure(0, weight=1)
+        
+        self.entry_usuario = ttk.Entry(self.input_frame, font=('Arial', 11))
+        self.entry_usuario.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=(0, 5))
+        self.entry_usuario.bind('<Return>', self.processar_resposta)
+        
+        self.btn_enviar = ttk.Button(self.input_frame, text="Enviar", command=self.processar_resposta)
+        self.btn_enviar.grid(row=0, column=1)
+    
+    def limpar_conteudo(self):
+        """Limpa a área de conteúdo"""
+        self.text_area.config(state=tk.NORMAL)
+        self.text_area.delete(1.0, tk.END)
+        self.text_area.config(state=tk.DISABLED)
+        self.entry_usuario.delete(0, tk.END)
+    
+    def adicionar_texto(self, texto, tag=None):
+        """Adiciona texto formatado na área de conteúdo"""
+        self.text_area.config(state=tk.NORMAL)
+        if tag:
+            self.text_area.insert(tk.END, texto + "\n\n", tag)
+        else:
+            self.text_area.insert(tk.END, texto + "\n\n")
+        self.text_area.see(tk.END)
+        self.text_area.config(state=tk.DISABLED)
+    
+    def processar_resposta(self, event=None):
+        """Processa as respostas do usuário"""
+        resposta = self.entry_usuario.get().strip()
+        if not resposta:
+            return
+        
+        self.adicionar_texto(f"👤 Você: {resposta}", "usuario")
+        self.entry_usuario.delete(0, tk.END)
+        
+        # Lógica baseada no contexto atual
+        if not self.usuario["nome"]:
+            self.processar_nome(resposta)
+        else:
+            self.processar_reflexao(resposta)
+    
+    def processar_nome(self, nome):
+        """Processa o nome do usuário"""
+        self.usuario["nome"] = nome
+        self.adicionar_texto(f"🌌 Prazer, {nome}! Vamos começar sua jornada de despertar.")
+        self.adicionar_texto("Vou te fazer algumas perguntas para entender seu nível atual de consciência digital...")
+        self.fazer_perguntas_diagnostico()
+    
+    def fazer_perguntas_diagnostico(self):
+        """Faz perguntas de diagnóstico"""
+        perguntas = [
+            "Quantas horas por dia você passa em redes sociais?",
+            "Você já se pegou comparando sua vida com a de influencers?",
+            "Sente ansiedade quando fica sem checar notificações?",
+            "Acredita que o que vê online representa a realidade?",
+            "Já percebeu algoritmos influenciando suas escolhas?"
+        ]
+        
+        self.perguntas_restantes = perguntas.copy()
+        self.respostas_diagnostico = []
+        self.fazer_proxima_pergunta()
+    
+    def fazer_proxima_pergunta(self):
+        """Faz a próxima pergunta do diagnóstico"""
+        if self.perguntas_restantes:
+            pergunta = self.perguntas_restantes.pop(0)
+            self.adicionar_texto(f"🤔 {pergunta}")
+            self.pergunta_atual = pergunta
+        else:
+            self.avaliar_diagnostico()
+    
+    def processar_reflexao(self, resposta):
+        """Processa reflexões do usuário"""
+        if hasattr(self, 'perguntas_restantes'):
+            self.respostas_diagnostico.append((self.pergunta_atual, resposta))
+            self.fazer_proxima_pergunta()
+        else:
+            # Resposta genérica para reflexões
+            reflexoes_encorajadoras = [
+                "Interessante perspectiva! O que mais você percebeu?",
+                "Bom insight! Como isso mudou sua forma de ver o digital?",
+                "Excelente observação! Quer explorar mais esse aspecto?",
+                "Profunda reflexão! Como você aplicará isso no seu dia a dia?"
+            ]
+            resposta_bot = random.choice(reflexoes_encorajadoras)
+            self.adicionar_texto(f"🤖 Guia: {resposta_bot}")
+    
+    def avaliar_diagnostico(self):
+        """Avalia o diagnóstico e define o nível inicial"""
+        pontuacao = len([r for p, r in self.respostas_diagnostico if len(r) > 20])  # Respostas elaboradas
+        
+        if pontuacao <= 1:
+            nivel = 1
+        elif pontuacao <= 3:
+            nivel = 2
+        else:
+            nivel = 3
+        
+        self.usuario["nivel_consciencia"] = nivel
+        self.usuario["pontuacao"] = pontuacao
+        
+        nivel_info = self.niveis_consciencia[nivel]
+        
+        self.adicionar_texto("📊 DIAGNÓSTICO COMPLETO!")
+        self.adicionar_texto(f"Seu nível atual: {nivel_info['nome']}")
+        self.adicionar_texto(f"Descrição: {nivel_info['descricao']}")
+        self.adicionar_texto("\n💡 Características do seu nível:")
+        for carac in nivel_info['caracteristicas']:
+            self.adicionar_texto(f"   • {carac}")
+        
+        self.adicionar_texto("\n🎯 Vamos trabalhar juntos para elevar sua consciência!")
+        self.mostrar_opcoes_pos_diagnostico()
+    
+    def mostrar_opcoes_pos_diagnostico(self):
+        """Mostra opções após o diagnóstico"""
+        self.adicionar_texto("\nO que você gostaria de explorar agora?")
+        self.adicionar_texto("1. 💡 Fazer exercícios de consciência")
+        self.adicionar_texto("2. 🎯 Experimentar vivências despertadoras") 
+        self.adicionar_texto("3. 📈 Ver meu progresso")
+        self.adicionar_texto("4. 🌐 Conectar com comunidade")
+        
+        self.entry_usuario.focus()
+    
+    # Telas do aplicativo
+    def mostrar_tela_boas_vindas(self):
+        """Mostra tela de boas-vindas"""
+        self.limpar_conteudo()
+        self.adicionar_texto("🌌 BEM-VINDO AO APP DESPERTAR CONSCIÊNCIA DIGITAL")
+        self.adicionar_texto("="*60)
+        self.adicionar_texto("\nEste aplicativo vai te ajudar a:")
+        self.adicionar_texto("• 🎯 Perceber a Matrix digital em que vivemos")
+        self.adicionar_texto("• 💡 Despertar para manipulações algorítmicas") 
+        self.adicionar_texto("• 🕊️ Encontrar liberdade no mundo digital")
+        self.adicionar_texto("• 🌟 Usar tecnologia com consciência e propósito")
+        self.adicionar_texto("\n" + "="*60)
+        
+        if not self.usuario["nome"]:
+            self.adicionar_texto("\nComo posso te chamar?")
+            self.entry_usuario.focus()
+    
+    def mostrar_diagnostico(self):
+        """Mostra tela de diagnóstico"""
+        self.limpar_conteudo()
+        if self.usuario["nome"]:
+            nivel = self.usuario["nivel_consciencia"]
+            nivel_info = self.niveis_consciencia[nivel]
+            
+            self.adicionar_texto(f"📊 SEU DIAGNÓSTICO DE CONSCIÊNCIA DIGITAL")
+            self.adicionar_texto("="*50)
+            self.adicionar_texto(f"\n👤 Nome: {self.usuario['nome']}")
+            self.adicionar_texto(f"🌅 Nível: {nivel_info['nome']}")
+            self.adicionar_texto(f"📈 Pontuação: {self.usuario['pontuacao']}/5")
+            self.adicionar_texto(f"📅 Desde: {self.usuario['data_cadastro'].strftime('%d/%m/%Y')}")
+            
+            self.adicionar_texto("\n💡 CARACTERÍSTICAS DO SEU NÍVEL:")
+            for carac in nivel_info['caracteristicas']:
+                self.adicionar_texto(f"   • {carac}")
+            
+            self.adicionar_texto("\n🎯 PRÓXIMOS PASSOS:")
+            for exercicio in nivel_info['exercicios'][:2]:
+                self.adicionar_texto(f"   • {exercicio}")
+        else:
+            self.mostrar_tela_boas_vindas()
+    
+    def mostrar_exercicios(self):
+        """Mostra exercícios de consciência"""
+        self.limpar_conteudo()
+        nivel = self.usuario.get("nivel_consciencia", 1)
+        nivel_info = self.niveis_consciencia[nivel]
+        
+        self.adicionar_texto("💡 EXERCÍCIOS DE CONSCIÊNCIA DIGITAL")
+        self.adicionar_texto("="*50)
+        self.adicionar_texto(f"\nExercícios para nível: {nivel_info['nome']}")
+        
+        for i, exercicio in enumerate(nivel_info['exercicios'], 1):
+            self.adicionar_texto(f"\n{i}. {exercicio}")
+            self.adicionar_texto("   💭 Reflexione sobre isso e compartilhe seus insights:")
+        
+        self.adicionar_texto("\n🎯 Escolha um exercício e me conte suas reflexões!")
+        self.entry_usuario.focus()
+    
+    def mostrar_experiencias(self):
+        """Mostra experiências despertadoras"""
+        self.limpar_conteudo()
+        
+        self.adicionar_texto("🎯 EXPERIÊNCIAS DESPERTADORAS")
+        self.adicionar_texto("="*50)
+        self.adicionar_texto("\nVivencie estas experiências para acelerar seu despertar:")
+        
+        for i, exp in enumerate(self.experiencias_despertadoras, 1):
+            self.adicionar_texto(f"\n{i}. {exp['titulo']}")
+            self.adicionar_texto(f"   📝 {exp['descricao']}")
+            self.adicionar_texto(f"   🤔 {exp['reflexao']}")
+            self.adicionar_texto(f"   🎯 Ação: {exp['acao']}")
+        
+        self.adicionar_texto("\n💫 Qual experiência você gostaria de tentar primeiro?")
+        self.entry_usuario.focus()
+    
+    def mostrar_progresso(self):
+        """Mostra progresso do usuário"""
+        self.limpar_conteudo()
+        
+        self.adicionar_texto("📈 SEU PROGRESSO NO DESPERTAR")
+        self.adicionar_texto("="*50)
+        
+        if self.usuario["nome"]:
+            nivel_atual = self.usuario["nivel_consciencia"]
+            progresso = (nivel_atual / 4) * 100
+            
+            self.adicionar_texto(f"\n🎯 Progresso: {progresso:.1f}%")
+            self.adicionar_texto(f"🌅 Nível atual: {self.niveis_consciencia[nivel_atual]['nome']}")
+            self.adicionar_texto(f"⭐ Pontuação: {self.usuario['pontuacao']}")
+            self.adicionar_texto(f"📅 Dias na jornada: {(datetime.datetime.now() - self.usuario['data_cadastro']).days}")
+            
+            # Próximos níveis
+            self.adicionar_texto("\n🔮 PRÓXIMOS NÍVEIS:")
+            for nivel in range(nivel_atual + 1, 5):
+                info = self.niveis_consciencia[nivel]
+                self.adicionar_texto(f"   {nivel}. {info['nome']} - {info['descricao']}")
+        else:
+            self.adicionar_texto("\n⚠️ Complete o diagnóstico primeiro!")
+            self.mostrar_tela_boas_vindas()
+    
+    def mostrar_comunidade(self):
+        """Mostra informações da comunidade"""
+        self.limpar_conteudo()
+        
+        self.adicionar_texto("🌐 COMUNIDADE DE DESPERTOS")
+        self.adicionar_texto("="*50)
+        self.adicionar_texto("\n💫 Você não está sozinho nesta jornada!")
+        self.adicionar_texto("\n📊 Estatísticas da comunidade:")
+        self.adicionar_texto("   • 65% estão no nível 1-2 (Despertando)")
+        self.adicionar_texto("   • 25% no nível 3 (Conscientes)")
+        self.adicionar_texto("   • 10% no nível 4 (Mestres)")
+        self.adicionar_texto("\n🎯 Princípios da comunidade:")
+        self.adicionar_texto("   • Compartilhar insights sem julgamento")
+        self.adicionar_texto("   • Respeitar o ritmo de cada um")
+        self.adicionar_texto("   • Focar em soluções conscientes")
+        self.adicionar_texto("\n💡 Junte-se a nós para acelerar o despertar coletivo!")
+    
+    def mostrar_biblioteca(self):
+        """Mostra biblioteca de recursos"""
+        self.limpar_conteudo()
+        
+        recursos = [
+            {"titulo": "O Dilema das Redes", "tipo": "Documentário", "nivel": 2},
+            {"titulo": "Deep Work", "tipo": "Livro", "nivel": 3},
+            {"titulo": "Attention Economy", "tipo": "Artigo", "nivel": 3},
+            {"titulo": "Digital Minimalism", "tipo": "Livro", "nivel": 2},
+            {"titulo": "The Social Dilemma", "tipo": "Filme", "nivel": 1},
+        ]
+        
+        self.adicionar_texto("📚 BIBLIOTECA DO DESPERTAR")
+        self.adicionar_texto("="*50)
+        self.adicionar_texto("\nRecursos para aprofundar sua consciência digital:")
+        
+        for recurso in recursos:
+            self.adicionar_texto(f"\n📖 {recurso['titulo']}")
+            self.adicionar_texto(f"   🎯 Tipo: {recurso['tipo']}")
+            self.adicionar_texto(f"   🌟 Nível: {recurso['nivel']}")
+    
+    def mostrar_configuracoes(self):
+        """Mostra configurações"""
+        self.limpar_conteudo()
+        
+        self.adicionar_texto("⚙️ CONFIGURAÇÕES")
+        self.adicionar_texto("="*50)
+        self.adicionar_texto("\n🔧 Personalize sua experiência:")
+        self.adicionar_texto("\n1. 🔔 Notificações de lembretes conscientes")
+        self.adicionar_texto("2. 📊 Metas de redução de tempo digital") 
+        self.adicionar_texto("3. 🎯 Lembretes de propósito")
+        self.adicionar_texto("4. 💾 Exportar dados de progresso")
+        self.adicionar_texto("5. 🔄 Reiniciar jornada")
+        
+        self.adicionar_texto("\n💡 Escolha uma opção para configurar:")
+
+# Configurar tags para formatação
+def configurar_tags(text_widget):
+    """Configura tags de formatação para o texto"""
+    text_widget.tag_config("usuario", foreground="#4fc3f7", font=('Arial', 11, 'bold'))
+    text_widget.tag_config("sistema", foreground="#ff9800", font=('Arial', 11, 'bold'))
+    text_widget.tag_config("destaque", foreground="#69f0ae", font=('Arial', 11, 'bold'))
+
+# 🚀 Executar aplicativo
+if __name__ == "__main__":
+    try:
+        root = tk.Tk()
+        app = AppDespertarConsciencia(root)
+        configurar_tags(app.text_area)
+        root.mainloop()
+    except Exception as e:
+        print(f"Erro ao iniciar aplicativo: {e}")
+        print("Certifique-se de ter o tkinter instalado:")
+        print("Linux: sudo apt-get install python3-tk")
+        print("Windows: Já vem instalado com Python")
+        print("Mac: brew install python-tk")
