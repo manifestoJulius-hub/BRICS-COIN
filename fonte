@@ -1,0 +1,610 @@
+"""
+BRICS-COIN - Plataforma Blockchain com Fundo de 1 Trilhão de USD
+"""
+
+import hashlib
+import json
+import time
+import datetime
+from typing import List, Dict, Optional
+import random
+import threading
+import tkinter as tk
+from tkinter import ttk, messagebox, scrolledtext
+
+# Configuração do Fundo BRICS
+FUNDO_BRICS_TRILHAO = 1000000000000  # 1 trilhão de dólares
+COTACAO_BRICS_USD = 1.50  # 1 BRICS = $1.50 USD
+BRICS_TRILHAO = FUNDO_BRICS_TRILHAO / COTACAO_BRICS_USD  # BRICS equivalentes
+
+class BlocoBRICS:
+    """Bloco otimizado para transações internacionais BRICS"""
+    
+    def __init__(self, indice, timestamp, transacoes, hash_anterior, validator_brics):
+        self.indice = indice
+        self.timestamp = timestamp
+        self.transacoes = transacoes
+        self.hash_anterior = hash_anterior
+        self.validator_brics = validator_brics
+        self.nonce = 0
+        self.hash = self.calcular_hash()
+    
+    def calcular_hash(self) -> str:
+        """Calcula hash do bloco com informações BRICS"""
+        bloco_string = json.dumps({
+            "indice": self.indice,
+            "timestamp": str(self.timestamp),
+            "transacoes": self.transacoes,
+            "hash_anterior": self.hash_anterior,
+            "validator": self.validator_brics,
+            "nonce": self.nonce
+        }, sort_keys=True).encode()
+        
+        return hashlib.sha256(bloco_string).hexdigest()
+    
+    def minerar_bloco(self, dificuldade: int):
+        """Proof of Stake adaptado para BRICS"""
+        alvo = "0" * dificuldade
+        while self.hash[:dificuldade] != alvo:
+            self.nonce += 1
+            self.hash = self.calcular_hash()
+        
+        print(f"✅ Bloco {self.indice} minerado por {self.validator_brics}")
+        return self.hash
+
+class BlockchainBRICS:
+    """Blockchain especializada para transações BRICS"""
+    
+    def __init__(self):
+        self.cadeia = [self.criar_bloco_genesis()]
+        self.transacoes_pendentes = []
+        self.dificuldade = 4
+        self.recompensa_mineracao = 100
+        self.validadores_brics = []
+        self.saldo_validadores = {}
+        self.taxas_coletadas = 0
+        
+        # Carteira principal do fundo BRICS
+        self.carteira_principal = "0x8e3f8fb82696044b3cad1221c52a365207f4df0e"
+        
+        # Inicializar países BRICS
+        self.inicializar_brics()
+    
+    def inicializar_brics(self):
+        """Inicializa os países BRICS como validadores"""
+        paises_brics = [
+            {"codigo": "BR", "nome": "Brasil", "peso": 1.0},
+            {"codigo": "RU", "nome": "Rússia", "peso": 1.0},
+            {"codigo": "IN", "nome": "Índia", "peso": 1.0},
+            {"codigo": "CN", "nome": "China", "peso": 1.2},
+            {"codigo": "ZA", "nome": "África do Sul", "peso": 0.8}
+        ]
+        
+        self.validadores_brics = paises_brics
+        for pais in paises_brics:
+            self.saldo_validadores[pais['codigo']] = BRICS_TRILHAO * 0.01  # 1% do fundo para cada
+    
+    def criar_bloco_genesis(self) -> BlocoBRICS:
+        """Cria o bloco gênesis com o fundo de 1 trilhão"""
+        transacao_genesis = {
+            "de": "SISTEMA_BRICS",
+            "para": self.carteira_principal,
+            "quantidade": BRICS_TRILHAO,
+            "moeda": "BRICS-COIN",
+            "timestamp": datetime.datetime.now(),
+            "descricao": "FUNDO BRICS - 1 TRILHÃO USD"
+        }
+        
+        return BlocoBRICS(0, datetime.datetime.now(), [transacao_genesis], "0", "BRICS")
+    
+    def obter_ultimo_bloco(self) -> BlocoBRICS:
+        return self.cadeia[-1]
+    
+    def selecionar_validador(self) -> str:
+        """Seleciona validador baseado em Proof of Stake BRICS"""
+        total_stake = sum(self.saldo_validadores.values())
+        if total_stake == 0:
+            return random.choice([p['codigo'] for p in self.validadores_brics])
+        
+        roleta = random.uniform(0, total_stake)
+        acumulado = 0
+        
+        for pais in self.validadores_brics:
+            acumulado += self.saldo_validadores[pais['codigo']]
+            if roleta <= acumulado:
+                return pais['codigo']
+        
+        return "BR"
+    
+    def adicionar_transacao(self, de: str, para: str, quantidade: float, moeda: str = "BRICS", descricao: str = "") -> bool:
+        """Adiciona transação à pool pendente"""
+        if quantidade <= 0:
+            return False
+        
+        # Verificar saldo se não for sistema ou carteira principal
+        if de != "SISTEMA_BRICS" and de != self.carteira_principal and self.obter_saldo(de) < quantidade:
+            return False
+        
+        transacao = {
+            "de": de,
+            "para": para,
+            "quantidade": quantidade,
+            "moeda": moeda,
+            "timestamp": datetime.datetime.now(),
+            "taxa": quantidade * 0.01,
+            "descricao": descricao
+        }
+        
+        self.transacoes_pendentes.append(transacao)
+        return True
+    
+    def minerar_transacoes_pendentes(self, endereco_minerador: str):
+        """Mina transações pendentes usando Proof of Stake BRICS"""
+        if not self.transacoes_pendentes:
+            return False
+        
+        validador = self.selecionar_validador()
+        bloco = BlocoBRICS(
+            len(self.cadeia),
+            datetime.datetime.now(),
+            self.transacoes_pendentes,
+            self.obter_ultimo_bloco().hash,
+            validador
+        )
+        
+        bloco.minerar_bloco(self.dificuldade)
+        self.cadeia.append(bloco)
+        
+        # Processar recompensas e taxas
+        taxas_total = sum(t['taxa'] for t in self.transacoes_pendentes)
+        self.saldo_validadores[validador] += self.recompensa_mineracao + taxas_total
+        self.taxas_coletadas += taxas_total
+        
+        # Limpar transações pendentes e adicionar recompensa
+        self.transacoes_pendentes = [{
+            "de": "SISTEMA_BRICS",
+            "para": endereco_minerador,
+            "quantidade": self.recompensa_mineracao,
+            "moeda": "BRICS",
+            "timestamp": datetime.datetime.now(),
+            "descricao": "Recompensa de mineração"
+        }]
+        
+        return True
+    
+    def obter_saldo(self, endereco: str) -> float:
+        """Calcula saldo de um endereço"""
+        saldo = 0.0
+        
+        for bloco in self.cadeia:
+            for transacao in bloco.transacoes:
+                if transacao['para'] == endereco:
+                    saldo += transacao['quantidade']
+                if transacao['de'] == endereco:
+                    saldo -= transacao['quantidade']
+        
+        return saldo
+    
+    def validar_cadeia(self) -> bool:
+        """Valida integridade da blockchain"""
+        for i in range(1, len(self.cadeia)):
+            bloco_atual = self.cadeia[i]
+            bloco_anterior = self.cadeia[i-1]
+            
+            if bloco_atual.hash != bloco_atual.calcular_hash():
+                return False
+            
+            if bloco_atual.hash_anterior != bloco_anterior.hash:
+                return False
+        
+        return True
+    
+    def obter_estatisticas_brics(self) -> Dict:
+        """Retorna estatísticas da rede BRICS"""
+        total_transacoes = sum(len(bloco.transacoes) for bloco in self.cadeia)
+        volume_total = 0
+        
+        for bloco in self.cadeia:
+            for transacao in bloco.transacoes:
+                if transacao['de'] != "SISTEMA_BRICS":
+                    volume_total += transacao['quantidade']
+        
+        saldo_principal = self.obter_saldo(self.carteira_principal)
+        
+        return {
+            "total_blocos": len(self.cadeia),
+            "total_transacoes": total_transacoes,
+            "volume_total": volume_total,
+            "taxas_coletadas": self.taxas_coletadas,
+            "saldo_validadores": self.saldo_validadores,
+            "dificuldade_rede": self.dificuldade,
+            "fundo_principal_brl": saldo_principal * COTACAO_BRICS_USD * 5.0,  # Conversão BRL
+            "fundo_principal_brics": saldo_principal
+        }
+
+class CarteiraBRICS:
+    """Carteira digital para BRICS-Coin"""
+    
+    def __init__(self, dono: str, blockchain: BlockchainBRICS):
+        self.dono = dono
+        self.blockchain = blockchain
+        self.endereco = self.gerar_endereco()
+        self.historico = []
+    
+    def gerar_endereco(self) -> str:
+        """Gera endereço único"""
+        return hashlib.sha256(f"{self.dono}{datetime.datetime.now()}".encode()).hexdigest()[:40]
+    
+    def obter_saldo(self) -> float:
+        return self.blockchain.obter_saldo(self.endereco)
+    
+    def enviar_transacao(self, destinatario: str, quantidade: float, descricao: str = "") -> bool:
+        """Envia transação para outro endereço"""
+        if quantidade <= 0 or self.obter_saldo() < quantidade:
+            return False
+        
+        sucesso = self.blockchain.adicionar_transacao(
+            self.endereco, destinatario, quantidade, "BRICS", descricao
+        )
+        
+        if sucesso:
+            self.historico.append({
+                "tipo": "envio",
+                "para": destinatario,
+                "quantidade": quantidade,
+                "timestamp": datetime.datetime.now(),
+                "status": "pendente",
+                "descricao": descricao
+            })
+        
+        return sucesso
+
+class AppBRICSCoin:
+    """Aplicativo completo para BRICS-Coin"""
+    
+    def __init__(self, root):
+        self.root = root
+        self.root.title("🌍 BRICS-Coin - Fundo de 1 Trilhão USD")
+        self.root.geometry("1200x800")
+        
+        # Inicializar blockchain
+        self.blockchain = BlockchainBRICS()
+        self.carteiras = {}
+        self.carteira_atual = None
+        
+        self.setup_ui()
+        self.criar_carteira_padrao()
+        self.mostrar_info_fundo()
+    
+    def setup_ui(self):
+        """Configura interface do usuário"""
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        self.criar_aba_carteira()
+        self.criar_aba_blockchain()
+        self.criar_aba_transacoes()
+        self.criar_aba_brics()
+        self.criar_aba_fundo()
+    
+    def criar_aba_fundo(self):
+        """Cria aba específica para o Fundo BRICS"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="🏦 Fundo BRICS")
+        
+        ttk.Label(frame, text="💰 FUNDO BRICS - 1 TRILHÃO DE USD", 
+                 font=('Arial', 16, 'bold')).pack(pady=20)
+        
+        # Informações do fundo
+        info_frame = ttk.LabelFrame(frame, text="Informações do Fundo")
+        info_frame.pack(pady=10, padx=10, fill=tk.X)
+        
+        self.info_fundo = scrolledtext.ScrolledText(info_frame, height=12, width=80)
+        self.info_fundo.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
+        
+        # Controles do fundo
+        controles_frame = ttk.LabelFrame(frame, text="Operações do Fundo")
+        controles_frame.pack(pady=10, padx=10, fill=tk.X)
+        
+        ttk.Label(controles_frame, text="Destinatário:").grid(row=0, column=0, padx=5, pady=5)
+        self.entry_fundo_dest = ttk.Entry(controles_frame, width=50)
+        self.entry_fundo_dest.grid(row=0, column=1, padx=5, pady=5)
+        
+        ttk.Label(controles_frame, text="Quantidade (BRICS):").grid(row=1, column=0, padx=5, pady=5)
+        self.entry_fundo_quant = ttk.Entry(controles_frame, width=20)
+        self.entry_fundo_quant.grid(row=1, column=1, padx=5, pady=5)
+        
+        ttk.Label(controles_frame, text="Descrição:").grid(row=2, column=0, padx=5, pady=5)
+        self.entry_fundo_desc = ttk.Entry(controles_frame, width=50)
+        self.entry_fundo_desc.grid(row=2, column=1, padx=5, pady=5)
+        
+        ttk.Button(controles_frame, text="Transferir do Fundo", 
+                  command=self.transferir_fundo).grid(row=3, column=1, pady=10)
+    
+    def mostrar_info_fundo(self):
+        """Mostra informações do fundo BRICS"""
+        saldo_principal = self.blockchain.obter_saldo(self.blockchain.carteira_principal)
+        valor_usd = saldo_principal * COTACAO_BRICS_USD
+        valor_brl = valor_usd * 5.0  # Cotação USD/BRL
+        
+        info = f"""
+🏦 CARTEIRA PRINCIPAL BRICS
+
+📍 Endereço: {self.blockchain.carteira_principal}
+💰 Saldo em BRICS: {saldo_principal:,.2f}
+💵 Valor em USD: ${valor_usd:,.2f}
+🇧🇷 Valor em BRL: R$ {valor_brl:,.2f}
+
+📊 ESTATÍSTICAS:
+• Fundo Inicial: 1 Trilhão de USD
+• Cotação BRICS/USD: {COTACAO_BRICS_USD}
+• Total em Circulação: {BRICS_TRILHAO:,.0f} BRICS
+• Saldo Restante: {saldo_principal:,.0f} BRICS
+
+🌍 DISTRIBUIÇÃO BRICS:
+"""
+        for pais in self.blockchain.validadores_brics:
+            saldo_pais = self.blockchain.saldo_validadores[pais['codigo']]
+            info += f"• {pais['nome']}: {saldo_pais:,.0f} BRICS\n"
+
+        self.info_fundo.delete(1.0, tk.END)
+        self.info_fundo.insert(1.0, info)
+    
+    def transferir_fundo(self):
+        """Transfere recursos do fundo principal"""
+        destinatario = self.entry_fundo_dest.get()
+        quantidade = float(self.entry_fundo_quant.get())
+        descricao = self.entry_fundo_desc.get()
+        
+        if not destinatario or quantidade <= 0:
+            messagebox.showerror("Erro", "Preencha todos os campos corretamente")
+            return
+        
+        sucesso = self.blockchain.adicionar_transacao(
+            self.blockchain.carteira_principal,
+            destinatario,
+            quantidade,
+            "BRICS",
+            f"TRANSFERÊNCIA FUNDO BRICS - {descricao}"
+        )
+        
+        if sucesso:
+            messagebox.showinfo("Sucesso", f"Transferência de {quantidade:,.0f} BRICS realizada!")
+            self.entry_fundo_quant.delete(0, tk.END)
+            self.entry_fundo_desc.delete(0, tk.END)
+            self.mostrar_info_fundo()
+        else:
+            messagebox.showerror("Erro", "Falha na transferência")
+    
+    def criar_aba_carteira(self):
+        """Cria aba de gerenciamento de carteira"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="💰 Carteira")
+        
+        ttk.Label(frame, text="Sua Carteira BRICS-Coin", font=('Arial', 14, 'bold')).pack(pady=10)
+        
+        self.info_carteira = tk.Text(frame, height=8, width=80)
+        self.info_carteira.pack(pady=10, padx=10)
+        
+        frame_acoes = ttk.Frame(frame)
+        frame_acoes.pack(pady=10)
+        
+        ttk.Button(frame_acoes, text="Nova Carteira", command=self.criar_nova_carteira).pack(side=tk.LEFT, padx=5)
+        ttk.Button(frame_acoes, text="Atualizar Saldo", command=self.atualizar_info_carteira).pack(side=tk.LEFT, padx=5)
+        
+        frame_transfer = ttk.LabelFrame(frame, text="Transferência BRICS-Coin")
+        frame_transfer.pack(pady=10, padx=10, fill=tk.X)
+        
+        ttk.Label(frame_transfer, text="Destinatário:").grid(row=0, column=0, padx=5, pady=5)
+        self.entry_destinatario = ttk.Entry(frame_transfer, width=40)
+        self.entry_destinatario.grid(row=0, column=1, padx=5, pady=5)
+        
+        ttk.Label(frame_transfer, text="Quantidade:").grid(row=1, column=0, padx=5, pady=5)
+        self.entry_quantidade = ttk.Entry(frame_transfer, width=20)
+        self.entry_quantidade.grid(row=1, column=1, padx=5, pady=5)
+        
+        ttk.Button(frame_transfer, text="Enviar BRICS", command=self.enviar_transacao).grid(row=2, column=1, pady=10)
+    
+    def criar_aba_blockchain(self):
+        """Cria aba de visualização da blockchain"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="⛓️ Blockchain")
+        
+        ttk.Label(frame, text="Blockchain BRICS - Visualizador", font=('Arial', 14, 'bold')).pack(pady=10)
+        
+        columns = ('Índice', 'Timestamp', 'Validador', 'Transações', 'Hash')
+        self.tree_blocos = ttk.Treeview(frame, columns=columns, show='headings', height=15)
+        
+        for col in columns:
+            self.tree_blocos.heading(col, text=col)
+            self.tree_blocos.column(col, width=120)
+        
+        self.tree_blocos.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
+        
+        ttk.Button(frame, text="Atualizar Blockchain", command=self.atualizar_tree_blocos).pack(pady=10)
+    
+    def criar_aba_transacoes(self):
+        """Cria aba de transações"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="💸 Transações")
+        
+        ttk.Label(frame, text="Transações Pendentes e Histórico", font=('Arial', 14, 'bold')).pack(pady=10)
+        
+        frame_pendentes = ttk.LabelFrame(frame, text="Transações Pendentes")
+        frame_pendentes.pack(pady=10, padx=10, fill=tk.X)
+        
+        self.text_pendentes = scrolledtext.ScrolledText(frame_pendentes, height=6, width=80)
+        self.text_pendentes.pack(padx=10, pady=10)
+        
+        frame_historico = ttk.LabelFrame(frame, text="Histórico de Transações")
+        frame_historico.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
+        
+        self.text_historico = scrolledtext.ScrolledText(frame_historico, height=10, width=80)
+        self.text_historico.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+        
+        ttk.Button(frame, text="Minerar Bloco", command=self.minerar_bloco_manual).pack(pady=10)
+        ttk.Button(frame, text="Atualizar Transações", command=self.atualizar_transacoes).pack(pady=10)
+    
+    def criar_aba_brics(self):
+        """Cria aba de informações BRICS"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="🌍 BRICS")
+        
+        ttk.Label(frame, text="Informações dos Países BRICS", font=('Arial', 14, 'bold')).pack(pady=10)
+        
+        self.text_brics = scrolledtext.ScrolledText(frame, height=15, width=80)
+        self.text_brics.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
+        
+        frame_stats = ttk.LabelFrame(frame, text="Estatísticas da Rede")
+        frame_stats.pack(pady=10, padx=10, fill=tk.X)
+        
+        self.label_stats = ttk.Label(frame_stats, text="", font=('Arial', 10))
+        self.label_stats.pack(pady=10)
+        
+        ttk.Button(frame, text="Atualizar Info BRICS", command=self.atualizar_info_brics).pack(pady=10)
+    
+    def criar_carteira_padrao(self):
+        """Cria carteira padrão para o usuário"""
+        self.carteira_atual = CarteiraBRICS("Usuário Principal", self.blockchain)
+        self.carteiras["principal"] = self.carteira_atual
+        
+        # Transferir 1000 BRICS do fundo para o usuário
+        self.blockchain.adicionar_transacao(
+            self.blockchain.carteira_principal,
+            self.carteira_atual.endereco,
+            1000,
+            "BRICS",
+            "Saldo inicial para usuário"
+        )
+        
+        self.atualizar_info_carteira()
+        self.atualizar_tree_blocos()
+        self.atualizar_info_brics()
+    
+    def criar_nova_carteira(self):
+        """Cria nova carteira"""
+        nome = f"Carteira_{len(self.carteiras) + 1}"
+        nova_carteira = CarteiraBRICS(nome, self.blockchain)
+        self.carteiras[nome] = nova_carteira
+        
+        messagebox.showinfo("Sucesso", f"Nova carteira criada: {nova_carteira.endereco}")
+        self.atualizar_info_carteira()
+    
+    def atualizar_info_carteira(self):
+        """Atualiza informações da carteira"""
+        if self.carteira_atual:
+            saldo_brics = self.carteira_atual.obter_saldo()
+            saldo_usd = saldo_brics * COTACAO_BRICS_USD
+            saldo_brl = saldo_usd * 5.0
+            
+            info = f"""
+🌍 BRICS-Coin - Sua Carteira
+
+👤 Dono: {self.carteira_atual.dono}
+📧 Endereço: {self.carteira_atual.endereco}
+💰 Saldo BRICS: {saldo_brics:,.2f}
+💵 Valor USD: ${saldo_usd:,.2f}
+🇧🇷 Valor BRL: R$ {saldo_brl:,.2f}
+📊 Total de Carteiras: {len(self.carteiras)}
+            """
+            
+            self.info_carteira.delete(1.0, tk.END)
+            self.info_carteira.insert(1.0, info)
+    
+    def enviar_transacao(self):
+        """Envia transação"""
+        if not self.carteira_atual:
+            messagebox.showerror("Erro", "Nenhuma carteira selecionada")
+            return
+        
+        destinatario = self.entry_destinatario.get()
+        quantidade = float(self.entry_quantidade.get())
+        
+        if self.carteira_atual.enviar_transacao(destinatario, quantidade):
+            messagebox.showinfo("Sucesso", f"Transação de {quantidade} BRICS enviada!")
+            self.entry_quantidade.delete(0, tk.END)
+            self.entry_destinatario.delete(0, tk.END)
+            self.atualizar_info_carteira()
+        else:
+            messagebox.showerror("Erro", "Falha ao enviar transação. Verifique saldo.")
+    
+    def minerar_bloco_manual(self):
+        """Minera um bloco manualmente"""
+        if self.carteira_atual:
+            sucesso = self.blockchain.minerar_transacoes_pendentes(self.carteira_atual.endereco)
+            if sucesso:
+                messagebox.showinfo("Sucesso", "Bloco minerado com sucesso!")
+                self.atualizar_tree_blocos()
+                self.atualizar_transacoes()
+                self.atualizar_info_carteira()
+                self.atualizar_info_brics()
+                self.mostrar_info_fundo()
+    
+    def atualizar_tree_blocos(self):
+        """Atualiza treeview da blockchain"""
+        for item in self.tree_blocos.get_children():
+            self.tree_blocos.delete(item)
+        
+        for bloco in self.blockchain.cadeia:
+            self.tree_blocos.insert('', tk.END, values=(
+                bloco.indice,
+                bloco.timestamp.strftime("%d/%m/%Y %H:%M"),
+                bloco.validator_brics,
+                len(bloco.transacoes),
+                bloco.hash[:20] + "..."
+            ))
+    
+    def atualizar_transacoes(self):
+        """Atualiza informações de transações"""
+        pendentes_text = ""
+        for transacao in self.blockchain.transacoes_pendentes:
+            pendentes_text += f"De: {transacao['de'][:10]}... Para: {transacao['para'][:10]}... Quant: {transacao['quantidade']} BRICS\n"
+        
+        self.text_pendentes.delete(1.0, tk.END)
+        self.text_pendentes.insert(1.0, pendentes_text if pendentes_text else "Nenhuma transação pendente")
+        
+        historico_text = ""
+        for bloco in self.blockchain.cadeia[-10:]:
+            for transacao in bloco.transacoes:
+                de = transacao['de'][:10] + "..." if len(transacao['de']) > 10 else transacao['de']
+                para = transacao['para'][:10] + "..." if len(transacao['para']) > 10 else transacao['para']
+                historico_text += f"Bloco {bloco.indice}: {de} → {para} : {transacao['quantidade']} BRICS\n"
+        
+        self.text_historico.delete(1.0, tk.END)
+        self.text_historico.insert(1.0, historico_text)
+    
+    def atualizar_info_brics(self):
+        """Atualiza informações BRICS"""
+        info = "🌍 PAÍSES BRICS - VALIDADORES DA REDE\n\n"
+        
+        for pais in self.blockchain.validadores_brics:
+            saldo = self.blockchain.saldo_validadores.get(pais['codigo'], 0)
+            info += f"🇺🇳 {pais['nome']} ({pais['codigo']})\n"
+            info += f"   Peso de Voto: {pais['peso']}\n"
+            info += f"   Saldo Stake: {saldo:,.0f} BRICS\n"
+            info += f"   Valor USD: ${saldo * COTACAO_BRICS_USD:,.0f}\n\n"
+        
+        stats = self.blockchain.obter_estatisticas_brics()
+        stats_text = f"""
+📊 ESTATÍSTICAS DA REDE BRICS:
+
+⛓️ Total de Blocos: {stats['total_blocos']}
+💸 Total de Transações: {stats['total_transacoes']}
+💰 Volume Total: {stats['volume_total']:,.0f} BRICS
+🏦 Taxas Coletadas: {stats['taxas_coletadas']:,.0f} BRICS
+🎯 Dificuldade: {stats['dificuldade_rede']}
+💎 Fundo Principal: R$ {stats['fundo_principal_brl']:,.0f}
+        """
+        
+        self.text_brics.delete(1.0, tk.END)
+        self.text_brics.insert(1.0, info)
+        self.label_stats.config(text=stats_text)
+
+# 🚀 Executar aplicativo
+if __name__ == "__main__":
+    try:
+        root = tk.Tk()
+        app = AppBRICSCoin(root)
+        root.mainloop()
+    except Exception as e:
+        print(f"Erro ao iniciar BRICS-Coin: {e}")
